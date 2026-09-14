@@ -2,9 +2,15 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
 function resolveDatabaseUrl(): string {
-  let url = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0)
-    ? process.env.DATABASE_URL.trim()
-    : "mysql://root:root@127.0.0.1:3306/putmein";
+   const configuredUrl = process.env.DATABASE_URL?.trim();
+
+  if (!configuredUrl) {
+    throw new Error(
+      "DATABASE_URL is not configured. Please set DATABASE_URL before starting the application."
+    );
+  }
+
+  let url = configuredUrl;
 
   // Replace @localhost: with @127.0.0.1: to avoid IPv6 [::1] connection timeout on Linux
   url = url.replace("@localhost:", "@127.0.0.1:");
