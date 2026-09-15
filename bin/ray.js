@@ -80,7 +80,7 @@ function printBoxLine(content, innerWidth = 66) {
   console.log(`${C.bold}${C.cyan}│${C.reset}  ${content}${" ".repeat(pad)}  ${C.bold}${C.cyan}│${C.reset}`);
 }
 
-function printBanner(rayPort = 4567, brainPort = 4500) {
+function printBanner(rayPort = 4567, brainPort = 3100) {
   const lanIp = getLanIp();
   const border = "─".repeat(70);
 
@@ -92,9 +92,6 @@ function printBanner(rayPort = 4567, brainPort = 4500) {
   printBoxLine(`${C.bold}Network Dashboard:${C.reset}      ${C.cyan}http://${lanIp}:${rayPort}${C.reset}`);
   printBoxLine(`${C.bold}AI Backend (Brain):${C.reset}     ${C.dim}http://localhost:${brainPort}${C.reset}`);
   printBoxLine("");
-  printBoxLine(`${C.bold}Default Admin Login:${C.reset}`);
-  printBoxLine(`  * Email:    ${C.yellow}admin@putme.in${C.reset}`);
-  printBoxLine(`  * Password: ${C.yellow}admin123${C.reset}`);
   printBoxLine("");
   printBoxLine(`${C.bold}Useful CLI Commands:${C.reset}`);
   printBoxLine(`  * ${C.yellow}ray status${C.reset}        Inspect service health and memory`);

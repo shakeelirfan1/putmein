@@ -48,11 +48,9 @@ func main() {
 	if rayURL == "" {
 		rayURL = "http://localhost:3000"
 	}
-
 	internalSecret := os.Getenv("BRAIN_INTERNAL_SECRET")
 	if internalSecret == "" {
-		internalSecret = "brain-ray-internal-putmein-2024"
-		_ = os.Setenv("BRAIN_INTERNAL_SECRET", internalSecret)
+		log.Fatal("BRAIN_INTERNAL_SECRET environment variable is required")
 	}
 
 	// Start the monitor service (in-memory; Ray Next.js owns DB persistence)

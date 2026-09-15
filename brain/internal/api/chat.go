@@ -61,24 +61,24 @@ type chatRequest struct {
 // ── Tool tag regexes (same as agent package) ─────────────────────────────────
 
 var (
-	chatExecRe       = regexp.MustCompile(`(?s)<exec>(.*?)</exec>`)
-	chatReadRe       = regexp.MustCompile(`(?s)<read_file>(.*?)</read_file>`)
-	chatWriteRe      = regexp.MustCompile(`(?s)<write_file path="([^"]+)">(.*?)</write_file>`)
-	chatListRe       = regexp.MustCompile(`(?s)<list_dir>(.*?)</list_dir>`)
-	chatMkdirRe      = regexp.MustCompile(`(?s)<create_dir>(.*?)</create_dir>`)
-	chatDeleteRe     = regexp.MustCompile(`(?s)<delete_file>(.*?)</delete_file>`)
+	chatExecRe   = regexp.MustCompile(`(?s)<exec>(.*?)</exec>`)
+	chatReadRe   = regexp.MustCompile(`(?s)<read_file>(.*?)</read_file>`)
+	chatWriteRe  = regexp.MustCompile(`(?s)<write_file path="([^"]+)">(.*?)</write_file>`)
+	chatListRe   = regexp.MustCompile(`(?s)<list_dir>(.*?)</list_dir>`)
+	chatMkdirRe  = regexp.MustCompile(`(?s)<create_dir>(.*?)</create_dir>`)
+	chatDeleteRe = regexp.MustCompile(`(?s)<delete_file>(.*?)</delete_file>`)
 	// monitor_add: matches self-closing or open tag, with or without interval, flexible whitespace
 	chatMonitorAddRe = regexp.MustCompile(`<monitor_add[^>]*name="([^"]+)"[^>]*path="([^"]+)"[^>]*>`)
 	// deploy: matches <deploy ...> with name and path attributes in any order
-	chatDeployTagRe  = regexp.MustCompile(`<deploy\s+([^>]+)>?`)
-	chatNameAttrRe   = regexp.MustCompile(`name="([^"]+)"`)
-	chatPathAttrRe   = regexp.MustCompile(`path="([^"]+)"`)
-	chatPortAttrRe   = regexp.MustCompile(`port="?(\d+)"?`)
-	chatCheckPortsRe = regexp.MustCompile(`(?s)<check_ports\s*/?>`)
-	chatSetDomainsRe = regexp.MustCompile(`<set_domains\s+([^>]+)>?`)
+	chatDeployTagRe   = regexp.MustCompile(`<deploy\s+([^>]+)>?`)
+	chatNameAttrRe    = regexp.MustCompile(`name="([^"]+)"`)
+	chatPathAttrRe    = regexp.MustCompile(`path="([^"]+)"`)
+	chatPortAttrRe    = regexp.MustCompile(`port="?(\d+)"?`)
+	chatCheckPortsRe  = regexp.MustCompile(`(?s)<check_ports\s*/?>`)
+	chatSetDomainsRe  = regexp.MustCompile(`<set_domains\s+([^>]+)>?`)
 	chatProjectAttrRe = regexp.MustCompile(`project="([^"]+)"`)
 	chatDomainsAttrRe = regexp.MustCompile(`domains="([^"]+)"`)
-	chatPlanTagRe    = regexp.MustCompile(`(?s)<plan(?:\s+title="([^"]+)")?\s*>(.*?)</plan>`)
+	chatPlanTagRe     = regexp.MustCompile(`(?s)<plan(?:\s+title="([^"]+)")?\s*>(.*?)</plan>`)
 )
 
 // detectTool parses text for any tool tag and returns (toolName, cmdOrPath, found)
@@ -317,7 +317,7 @@ func runDetectedTool(ctx context.Context, text, toolName, arg, userID, githubTok
 		}
 		secret := os.Getenv("BRAIN_INTERNAL_SECRET")
 		if secret == "" {
-			secret = "brain-ray-internal-putmein-2024"
+			return "BRAIN_INTERNAL_SECRET is required"
 		}
 		payload, _ := json.Marshal(map[string]any{
 			"id":         projectNameOrID,
@@ -357,7 +357,9 @@ func runDetectedTool(ctx context.Context, text, toolName, arg, userID, githubTok
 		parts := strings.SplitN(arg, "|", 2)
 		name := parts[0]
 		path := ""
-		if len(parts) > 1 { path = parts[1] }
+		if len(parts) > 1 {
+			path = parts[1]
+		}
 		if err := monitor.AddProjectFromChat(userID, name, path, 30); err != nil {
 			errStr := fmt.Sprintf("Error adding to monitor: %v", err)
 			if onProgress != nil {
@@ -439,12 +441,24 @@ func injectMonitorContext(ctx context.Context, userInput string, reqProjects []m
 		}
 
 		if existing, ok := projectsMap[rp.ID]; ok {
-			if rp.Memory != "" { existing.Memory = rp.Memory }
-			if rp.Status != "" { existing.Status = rp.Status }
-			if rp.ManagedPid != 0 { existing.ManagedPid = rp.ManagedPid }
-			if rp.ManagedLogFile != "" { existing.ManagedLogFile = rp.ManagedLogFile }
-			if rp.ProjectUrl != "" { existing.ProjectUrl = rp.ProjectUrl }
-			if len(lpaths) > 0 { existing.LogPaths = lpaths }
+			if rp.Memory != "" {
+				existing.Memory = rp.Memory
+			}
+			if rp.Status != "" {
+				existing.Status = rp.Status
+			}
+			if rp.ManagedPid != 0 {
+				existing.ManagedPid = rp.ManagedPid
+			}
+			if rp.ManagedLogFile != "" {
+				existing.ManagedLogFile = rp.ManagedLogFile
+			}
+			if rp.ProjectUrl != "" {
+				existing.ProjectUrl = rp.ProjectUrl
+			}
+			if len(lpaths) > 0 {
+				existing.LogPaths = lpaths
+			}
 			existing.Alerts = alertStrs
 		} else {
 			projectsMap[rp.ID] = &unifiedProj{
@@ -488,11 +502,17 @@ func injectMonitorContext(ctx context.Context, userInput string, reqProjects []m
 				if len(cParts) >= 2 {
 					cName := cParts[1]
 					image := ""
-					if len(cParts) > 2 { image = cParts[2] }
+					if len(cParts) > 2 {
+						image = cParts[2]
+					}
 					status := ""
-					if len(cParts) > 3 { status = cParts[3] }
+					if len(cParts) > 3 {
+						status = cParts[3]
+					}
 					ports := ""
-					if len(cParts) > 4 { ports = cParts[4] }
+					if len(cParts) > 4 {
+						ports = cParts[4]
+					}
 					portInfo := ports
 					if ports != "" {
 						if strings.Contains(ports, "->") {
@@ -933,7 +953,9 @@ func chatStreamHandler(w http.ResponseWriter, r *http.Request) {
 				parts := strings.SplitN(toolArg, "|", 2)
 				pName := parts[0]
 				pPath := ""
-				if len(parts) > 1 { pPath = parts[1] }
+				if len(parts) > 1 {
+					pPath = parts[1]
+				}
 				approvalErr = ai.WriteSSEMonitorAddRequest(w, approvalID, pName, pPath, 30)
 			} else {
 				approvalErr = ai.WriteSSEApprovalRequest(w, approvalID, toolName, cmdStr)

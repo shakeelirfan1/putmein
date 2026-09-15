@@ -12,7 +12,7 @@ import { findDomainConflict, getPrimaryProjectUrl } from "@/lib/domains";
 export async function PATCH(req: NextRequest) {
   try {
     const secret = req.headers.get("x-brain-secret");
-    const expected = process.env.BRAIN_INTERNAL_SECRET || "brain-ray-internal-putmein-2024";
+    const expected = process.env.BRAIN_INTERNAL_SECRET;
     if (secret !== expected) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

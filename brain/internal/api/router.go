@@ -72,8 +72,22 @@ func NewRouter() http.Handler {
 	// Monitor routes
 	mux.HandleFunc("/v1/monitor/stream", monitorStreamHandler)
 	mux.HandleFunc("/v1/monitor/projects", monitorProjectsRouteHandler)
-	mux.HandleFunc("/v1/monitor/projects/", monitorProjectsRouteHandler)
-	mux.HandleFunc("/v1/monitor/process/", monitorProjectsRouteHandler) // process detect/spawn/stop
+	mux.HandleFunc("/v1/monitor/projects/", func(w http.ResponseWriter, r *http.Request) {
+    if strings.HasSuffix(r.URL.Path, "/fix") {
+        requireBrainSecret(http.HandlerFunc(monitorProjectsRouteHandler)).ServeHTTP(w, r)
+        return
+    }
+    monitorProjectsRouteHandler(w, r)
+})
+
+mux.HandleFunc("/v1/monitor/process/", func(w http.ResponseWriter, r *http.Request) {
+    path := strings.TrimPrefix(r.URL.Path, "/v1/monitor/process/")
+    if path == "spawn" || path == "stop" {
+        requireBrainSecret(http.HandlerFunc(monitorProjectsRouteHandler)).ServeHTTP(w, r)
+        return
+    }
+    monitorProjectsRouteHandler(w, r)
+})
 	mux.HandleFunc("/v1/monitor/alerts", monitorAlertsHandler)
 
 	// Security routes
@@ -82,9 +96,9 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("/v1/security/scans", securityScansHandler)
 
 	// Deploy routes
-	mux.HandleFunc("/v1/deploy", deployHandler)
-	mux.HandleFunc("/v1/deploy/logs", deployLogsHandler)
-	mux.HandleFunc("/v1/deploy/action", deployActionHandler)
+mux.HandleFunc("/v1/deploy", deployHandler)
+mux.HandleFunc("/v1/deploy/logs", deployLogsHandler)
+mux.Handle("/v1/deploy/action", requireBrainSecret(http.HandlerFunc(deployActionHandler)))
 
 	// Ports route (real-time port discovery and allocation)
 	mux.HandleFunc("/v1/ports", portsHandler)
@@ -95,21 +109,26 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("/v1/projects/analyze", projectsAnalyzeHandler)
 
 	// Container routes
-	mux.HandleFunc("/v1/containers", containersListHandler)
-	mux.HandleFunc("/v1/containers/", func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		if strings.HasSuffix(path, "/logs") {
-			containerLogsHandler(w, r)
-		} else if strings.Contains(path, "/start") || strings.Contains(path, "/stop") || strings.Contains(path, "/restart") || strings.Contains(path, "/remove") || strings.Contains(path, "/rm") {
-			containerActionHandler(w, r)
-		} else {
-			containerInspectHandler(w, r)
-		}
-	})
+mux.HandleFunc("/v1/containers", containersListHandler)
+mux.HandleFunc("/v1/containers/", func(w http.ResponseWriter, r *http.Request) {
+    path := r.URL.Path
+
+    if strings.HasSuffix(path, "/logs") {
+        requireBrainSecret(http.HandlerFunc(containerLogsHandler)).ServeHTTP(w, r)
+    } else if strings.Contains(path, "/start") ||
+        strings.Contains(path, "/stop") ||
+        strings.Contains(path, "/restart") ||
+        strings.Contains(path, "/remove") ||
+        strings.Contains(path, "/rm") {
+        requireBrainSecret(http.HandlerFunc(containerActionHandler)).ServeHTTP(w, r)
+    } else {
+        containerInspectHandler(w, r)
+    }
+})
 
 	// Terminal routes (interactive host and container execution)
-	mux.HandleFunc("/v1/terminal/exec", terminalExecHandler)
-	mux.HandleFunc("/v1/terminal/stream", terminalStreamHandler)
+	mux.Handle("/v1/terminal/exec", requireBrainSecret(http.HandlerFunc(terminalExecHandler)))
+	mux.Handle("/v1/terminal/stream", requireBrainSecret(http.HandlerFunc(terminalStreamHandler)))
 
 	return corsMiddleware(mux)
 }

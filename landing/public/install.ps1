@@ -176,7 +176,7 @@ if (!(Test-Path $configDir)) {
 $envFile = Join-Path $configDir ".env"
 $mysqlContainer = "putmein-mysql"
 $mysqlPort = "3306"
-$dbPassword = "root"
+$dbPassword = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 24 | ForEach-Object {[char]$_})
 
 if (Test-DockerRunning) {
     $existingContainers = @()
@@ -234,11 +234,11 @@ if (!(Test-Path $envFile)) {
 # PutmeIn Local Environment
 DATABASE_URL="mysql://root:${dbPassword}@127.0.0.1:${mysqlPort}/putmein?allowPublicKeyRetrieval=true"
 RAY_PORT=4567
-BRAIN_PORT=4500
+BRAIN_PORT=3100
 RAY_URL="http://localhost:4567"
-BRAIN_URL="http://localhost:4500"
-NEXT_PUBLIC_BRAIN_URL="http://localhost:4500"
-BRAIN_INTERNAL_SECRET="putmein-sec-2024"
+BRAIN_URL="http://localhost:3100"
+NEXT_PUBLIC_BRAIN_URL="http://localhost:3100"
+BRAIN_INTERNAL_SECRET="$([guid]::NewGuid().ToString('N'))"
 AGENT_AUTONOMOUS="false"
 "@
     Set-Content -Path $envFile -Value $envContent
@@ -350,11 +350,8 @@ Write-BoxLine "[OK] PutmeIn successfully installed and running!" -color Green
 Write-BoxLine ""
 Write-BoxLine "Web Dashboard (Ray):    http://localhost:4567"
 Write-BoxLine "Network Dashboard:      http://127.0.0.1:4567"
-Write-BoxLine "AI Backend (Brain):     http://localhost:4500"
+Write-BoxLine "AI Backend (Brain):     http://localhost:3100"
 Write-BoxLine ""
-Write-BoxLine "Default Admin Login:"
-Write-BoxLine "  * Email:    admin@putme.in" -color Yellow
-Write-BoxLine "  * Password: admin123" -color Yellow
 Write-BoxLine ""
 Write-BoxLine "Useful CLI Commands:"
 Write-BoxLine "  * ray status         Inspect service health and memory" -color Yellow

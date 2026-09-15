@@ -3,9 +3,13 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { isDashboardHost } from "@/lib/network";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-for-dev-only"
-);
+const JWT_SECRET_VALUE = process.env.JWT_SECRET;
+
+if (!JWT_SECRET_VALUE) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
+
+const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_VALUE);
 
 // Routes that require dashboard authentication
 const PROTECTED_ROUTES = ["/chat", "/dashboard", "/settings", "/servers", "/projects", "/monitor", "/deployments", "/containers", "/cicd", "/github"];

@@ -401,10 +401,10 @@ else
 # PutmeIn Local Environment
 DATABASE_URL="mysql://root:${DB_PASSWORD}@127.0.0.1:${MYSQL_PORT}/putmein?allowPublicKeyRetrieval=true"
 RAY_PORT=4567
-BRAIN_PORT=4500
+BRAIN_PORT=3100
 RAY_URL="http://localhost:4567"
-BRAIN_URL="http://localhost:4500"
-NEXT_PUBLIC_BRAIN_URL="http://localhost:4500"
+BRAIN_URL="http://localhost:3100"
+NEXT_PUBLIC_BRAIN_URL="http://localhost:3100"
 BRAIN_INTERNAL_SECRET="putmein-sec-$(head -c 8 /dev/urandom 2>/dev/null | xxd -p 2>/dev/null || date +%s)"
 AGENT_AUTONOMOUS="false"
 EOF
@@ -686,9 +686,9 @@ pm2 delete putmein-ray putmein-brain 2>/dev/null || true
 pm2 delete all 2>/dev/null || true
 pm2 kill 2>/dev/null || true
 if command -v fuser &>/dev/null; then
-  fuser -k 4567/tcp 4500/tcp 2>/dev/null || true
+  fuser -k 4567/tcp 3100/tcp 2>/dev/null || true
 elif command -v lsof &>/dev/null; then
-  lsof -ti:4567,4500 | xargs kill -9 2>/dev/null || true
+  lsof -ti:4567,3100 | xargs kill -9 2>/dev/null || true
 fi
 
 # Start services directly using fresh package ecosystem config
@@ -720,7 +720,7 @@ print_box_line() {
 # ==============================================================================
 LAN_IP=$(get_lan_ip)
 RAY_PORT="4567"
-BRAIN_PORT="4500"
+BRAIN_PORT="3100"
 BOX_BORDER=$(printf '─%.0s' {1..70})
 
 echo ""
@@ -734,7 +734,6 @@ print_box_line "${BOLD}AI Backend (Brain):${NC}     ${DIM}http://localhost:${BRA
 print_box_line ""
 print_box_line "${BOLD}Default Admin Login:${NC}"
 print_box_line "  * Email:    ${YELLOW}admin@putme.in${NC}"
-print_box_line "  * Password: ${YELLOW}admin123${NC}"
 print_box_line ""
 print_box_line "${BOLD}Useful CLI Commands:${NC}"
 print_box_line "  * ${YELLOW}ray status${NC}         Inspect service health and memory"

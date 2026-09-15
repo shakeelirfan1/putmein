@@ -1,6 +1,5 @@
 -- PutmeIn Autonomous DevOps & Infrastructure Engine
 -- Database Initialization Schema (Idempotent: Never drops or modifies existing data)
-
 CREATE TABLE IF NOT EXISTS `Post` (
   `id` VARCHAR(191) NOT NULL,
   `title` VARCHAR(191) NOT NULL,
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS `Post` (
   UNIQUE INDEX `Post_slug_key`(`slug`),
   INDEX `Post_slug_idx`(`slug`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `users` (
   `id` VARCHAR(191) NOT NULL,
   `email` VARCHAR(191) NOT NULL,
@@ -30,7 +28,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `users_email_key`(`email`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `contacts` (
   `id` VARCHAR(191) NOT NULL,
   `name` VARCHAR(191) NOT NULL,
@@ -40,7 +37,6 @@ CREATE TABLE IF NOT EXISTS `contacts` (
   `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `waitlists` (
   `id` VARCHAR(191) NOT NULL,
   `name` VARCHAR(191) NOT NULL,
@@ -50,7 +46,6 @@ CREATE TABLE IF NOT EXISTS `waitlists` (
   `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_chat_sessions` (
   `id` VARCHAR(191) NOT NULL,
   `userId` VARCHAR(191) NOT NULL,
@@ -61,7 +56,6 @@ CREATE TABLE IF NOT EXISTS `ray_chat_sessions` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_chat_sessions_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_chat_messages` (
   `id` VARCHAR(191) NOT NULL,
   `sessionId` VARCHAR(191) NOT NULL,
@@ -71,7 +65,6 @@ CREATE TABLE IF NOT EXISTS `ray_chat_messages` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_chat_messages_sessionId_fkey` FOREIGN KEY (`sessionId`) REFERENCES `ray_chat_sessions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_monitor_projects` (
   `id` VARCHAR(191) NOT NULL,
   `userId` VARCHAR(191) NOT NULL,
@@ -94,7 +87,6 @@ CREATE TABLE IF NOT EXISTS `ray_monitor_projects` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_monitor_projects_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_monitor_alerts` (
   `id` VARCHAR(191) NOT NULL,
   `projectId` VARCHAR(191) NOT NULL,
@@ -106,7 +98,6 @@ CREATE TABLE IF NOT EXISTS `ray_monitor_alerts` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_monitor_alerts_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `ray_monitor_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_deployments` (
   `id` VARCHAR(191) NOT NULL,
   `userId` VARCHAR(191) NOT NULL,
@@ -133,7 +124,6 @@ CREATE TABLE IF NOT EXISTS `ray_deployments` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_deployments_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_github_integrations` (
   `id` VARCHAR(191) NOT NULL,
   `userId` VARCHAR(191) NOT NULL,
@@ -146,7 +136,6 @@ CREATE TABLE IF NOT EXISTS `ray_github_integrations` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_github_integrations_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_pipelines` (
   `id` VARCHAR(191) NOT NULL,
   `userId` VARCHAR(191) NOT NULL,
@@ -164,7 +153,6 @@ CREATE TABLE IF NOT EXISTS `ray_pipelines` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_pipelines_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `ray_pipeline_runs` (
   `id` VARCHAR(191) NOT NULL,
   `pipelineId` VARCHAR(191) NOT NULL,
@@ -179,8 +167,3 @@ CREATE TABLE IF NOT EXISTS `ray_pipeline_runs` (
   PRIMARY KEY (`id`),
   CONSTRAINT `ray_pipeline_runs_pipelineId_fkey` FOREIGN KEY (`pipelineId`) REFERENCES `ray_pipelines` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Idempotent Default Admin Seeding: admin@putme.in / admin123
-INSERT INTO `users` (`id`, `email`, `password`, `name`, `role`, `createdAt`, `updatedAt`)
-SELECT 'cm_admin_default_01', 'admin@putme.in', '$2b$10$KehRdOpONjPGoTrnoUO/BemB5neS8js8teKaUo1QkoeNd0NZpA6pe', 'Admin', 'ADMIN', NOW(3), NOW(3)
-WHERE NOT EXISTS (SELECT 1 FROM `users` WHERE `email` = 'admin@putme.in');
